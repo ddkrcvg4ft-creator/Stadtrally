@@ -52,9 +52,15 @@
       cursor: pointer;
     }
 
-    button:hover {
-      background: #00a383;
-    }
+   button:hover {
+  background: #00a383;
+}
+
+button:disabled {
+  background: gray;
+  cursor: not-allowed;
+}
+    
 
     #message {
       margin-top: 15px;
@@ -104,7 +110,7 @@ const questions = [
     title: "Chekpopint 2",
     question: "What is the name of this place?",
     image: "https://img.directbooking.ro/getimage.ashx?f=Obiective&w=440&file=ad118ec8-06e0-4d1d-a126-18dbdbe3f6e1_sinagoga_brasov1.jpg",
-    answer: '"beth israel" synagogue'
+    answer: "beth israel synagogue"
   },
   {
     title: "Question?",
@@ -187,11 +193,36 @@ function checkAnswer() {
         "Correct!";
     }
 
-  } else {
+ } else {
+
+  const button = document.querySelector("button");
+
+  button.disabled = true;
+
+  let timeLeft = 60;
+
+  document.getElementById("message").innerText =
+    `Wrong answer! Wait ${timeLeft} seconds.`;
+
+  const timer = setInterval(() => {
+
+    timeLeft--;
 
     document.getElementById("message").innerText =
-      "Wrong answer!";
-  }
+      `Wrong answer! Wait ${timeLeft} seconds.`;
+
+    if(timeLeft <= 0){
+
+      clearInterval(timer);
+
+      button.disabled = false;
+
+      document.getElementById("message").innerText =
+        "You can try again!";
+    }
+
+  }, 1000);
+}
 }
 
 </script>
