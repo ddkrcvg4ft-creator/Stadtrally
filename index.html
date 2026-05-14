@@ -94,7 +94,7 @@ What is your group number? (1, 2 or 3)
 
 <br>
 
-<button onclick="checkAnswer()">Submit</button>
+<button id="submitBtn" onclick="checkAnswer()">Submit</button>
 
 <p id="message"></p>
 
@@ -118,7 +118,6 @@ firebase.initializeApp(firebaseConfig);
 const storage = firebase.storage();
 
 const allQuestions = [
-
 {
 title: "Checkpoint 1",
 question: "Find this place and take a picture with it!",
@@ -126,7 +125,6 @@ image: "https://wel.ro/wp-content/uploads/2024/09/poartascheibrasov-2.webp",
 answer: "poarta schei",
 needsPhoto: true
 },
-
 {
 title: "Question 1",
 question: "What is the name of this place?",
@@ -134,7 +132,6 @@ image: "https://wel.ro/wp-content/uploads/2024/09/poartascheibrasov-2.webp",
 answer: "poarta schei",
 needsPhoto: false
 },
-
 {
 title: "Checkpoint 2",
 question: "Find this place and take a picture with it!",
@@ -142,7 +139,6 @@ image: "https://img.directbooking.ro/getimage.ashx?f=Obiective&w=440&file=ad118e
 answer: "beth israel synagogue",
 needsPhoto: true
 },
-
 {
 title: "Question 2",
 question: "What is the name of this place?",
@@ -150,7 +146,6 @@ image: "https://img.directbooking.ro/getimage.ashx?f=Obiective&w=440&file=ad118e
 answer: "beth israel synagogue",
 needsPhoto: false
 },
-
 {
 title: "Checkpoint 3",
 question: "Find this place and take a picture with it!",
@@ -158,7 +153,6 @@ image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Johannes_Honte
 answer: "corp a",
 needsPhoto: true
 }
-
 ];
 
 const groupOrders = {
@@ -171,15 +165,9 @@ let questions = [];
 let currentQuestion = -1;
 
 function loadQuestion() {
-
-document.getElementById("title").innerText =
-questions[currentQuestion].title;
-
-document.getElementById("question").innerText =
-questions[currentQuestion].question;
-
-document.getElementById("image").src =
-questions[currentQuestion].image;
+document.getElementById("title").innerText = questions[currentQuestion].title;
+document.getElementById("question").innerText = questions[currentQuestion].question;
+document.getElementById("image").src = questions[currentQuestion].image;
 
 document.getElementById("answer").value = "";
 document.getElementById("photo").value = "";
@@ -192,141 +180,108 @@ document.getElementById("photo").style.display = "none";
 }
 
 function nextQuestion() {
-
 currentQuestion++;
 
 if(currentQuestion < questions.length){
-
 loadQuestion();
-
-document.getElementById("message").innerText =
-"Correct!";
-
+document.getElementById("message").innerText = "Correct!";
 } else {
-
-document.getElementById("message").innerText =
-"🎉 You finished the rally!";
+document.getElementById("message").innerText = "🎉 You finished the rally!";
 }
 }
 
 function startPenaltyTimer(endTime) {
-
-const button = document.querySelector("button");
+const button = document.getElementById("submitBtn");
 button.disabled = true;
 
 const timer = setInterval(() => {
-
 const timeLeft = Math.ceil((endTime - Date.now()) / 1000);
 
 if(timeLeft > 0){
-
 document.getElementById("message").innerText =
 `Wrong answer! Wait ${timeLeft} seconds.`;
-
 } else {
-
 clearInterval(timer);
 
 button.disabled = false;
-
 localStorage.removeItem("penaltyEnd");
 
 document.getElementById("message").innerText =
 "You can try again!";
 }
-
 }, 1000);
 }
 
 function checkAnswer() {
 
 const userAnswer =
-document.getElementById("answer")
-.value
-.toLowerCase()
-.trim();
+document.getElementById("answer").value.toLowerCase().trim();
 
+// GROUP SELECTION
 if(currentQuestion === -1){
 
 if(groupOrders[userAnswer]){
 
-questions =
-groupOrders[userAnswer].map(index => allQuestions[index]);
-
+questions = groupOrders[userAnswer].map(i => allQuestions[i]);
 currentQuestion = 0;
 
 loadQuestion();
-
-document.getElementById("message").innerText =
-"Group selected!";
+document.getElementById("message").innerText = "Group selected!";
 
 } else {
-
-document.getElementById("message").innerText =
-"Invalid group number!";
+document.getElementById("message").innerText = "Invalid group number!";
 }
 
 return;
 }
 
+// CHECK ANSWER
 if(userAnswer === questions[currentQuestion].answer){
 
 if(questions[currentQuestion].needsPhoto){
 
-const file =
-document.getElementById("photo").files[0];
+const file = document.getElementById("photo").files[0];
 
 if(!file){
-
 document.getElementById("message").innerText =
 "Please upload a photo first!";
-
 return;
 }
 
-const storageRef = storage.ref(
-"photos/" + Date.now() + "_" + file.name
-);
+const storageRef = storage.ref("photos/" + Date.now() + "_" + file.name);
 
 storageRef.put(file)
-
 .then(() => {
-
 document.getElementById("message").innerText =
 "Photo uploaded successfully!";
-
 nextQuestion();
-
 })
-
 .catch(() => {
-
 document.getElementById("message").innerText =
 "Upload failed!";
 });
 
 } else {
-
 nextQuestion();
 }
 
 } else {
 
+// PENALTY
 const endTime = Date.now() + 120000;
-
 localStorage.setItem("penaltyEnd", endTime);
-
 startPenaltyTimer(endTime);
 }
 }
 
 window.onload = function () {
-
 const savedEnd = localStorage.getItem("penaltyEnd");
 
 if(savedEnd && Date.now() < savedEnd){
-
 startPenaltyTimer(Number(savedEnd));
+} else {
+localStorage.removeItem("penaltyEnd");
+document.getElementById("submitBtn").disabled = false;
 }
 };
 
