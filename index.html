@@ -65,6 +65,11 @@
       margin-top: 15px;
       font-weight: bold;
     }
+
+    #photo {
+      background: white;
+      color: black;
+    }
   </style>
 </head>
 
@@ -74,16 +79,23 @@
 
   <h1 id="title">Group Selection</h1>
 
-  <img id="image" src="https://mediacdn.libertatea.ro/unsafe/1200x664/smart/filters:format(webp):contrast(8):quality(75)/https://static4.libertatea.ro/wp-content/uploads/2019/06/brasov-centrul-orasului-brasov.jpg" alt="Question Image">
+  <img id="image"
+       src="https://mediacdn.libertatea.ro/unsafe/1200x664/smart/filters:format(webp):contrast(8):quality(75)/https://static4.libertatea.ro/wp-content/uploads/2019/06/brasov-centrul-orasului-brasov.jpg"
+       alt="Question Image">
 
   <p id="question">
     What is your group number? (1, 2 or 3)
   </p>
 
-  <input type="text" id="answer" placeholder="Write the answer here">
+  <input type="text"
+         id="answer"
+         placeholder="Write the answer here">
+
   <br><br>
 
-<input type="file" id="photo" accept="image/*">
+  <input type="file"
+         id="photo"
+         accept="image/*">
 
   <br>
 
@@ -93,7 +105,30 @@
 
 </div>
 
+<!-- Firebase -->
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
 <script>
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBCzzTb8lHh02inio5vI5ysmXAP16sVgpA",
+  authDomain: "stadtrally-6dbca.firebaseapp.com",
+  projectId: "stadtrally-6dbca",
+  storageBucket: "stadtrally-6dbca.appspot.com",
+  messagingSenderId: "891948287876",
+  appId: "1:891948287876:web:bd5eda4ad903a460f2b299",
+  measurementId: "G-HPPK7E34KM"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const storage = firebase.storage();
+
+
+// QUESTIONS
 
 const allQuestions = [
 
@@ -101,49 +136,63 @@ const allQuestions = [
     title: "Checkpoint 1",
     question: "Find this place and take a picture with it!",
     image: "https://wel.ro/wp-content/uploads/2024/09/poartascheibrasov-2.webp",
-    answer: "poarta schei"
+    answer: "poarta schei",
+    needsPhoto: true
   },
+
   {
-    title: "Question?",
+    title: "Question 1",
     question: "What is the name of this place?",
     image: "https://wel.ro/wp-content/uploads/2024/09/poartascheibrasov-2.webp",
-    answer: "poarta schei"
+    answer: "poarta schei",
+    needsPhoto: false
   },
 
   {
     title: "Checkpoint 2",
     question: "Find this place and take a picture with it!",
     image: "https://img.directbooking.ro/getimage.ashx?f=Obiective&w=440&file=ad118ec8-06e0-4d1d-a126-18dbdbe3f6e1_sinagoga_brasov1.jpg",
-    answer: "beth israel synagogue"
+    answer: "beth israel synagogue",
+    needsPhoto: true
   },
-   {
-    title: "Checkpoint 2",
+
+  {
+    title: "Question 2",
     question: "What is the name of this place?",
     image: "https://img.directbooking.ro/getimage.ashx?f=Obiective&w=440&file=ad118ec8-06e0-4d1d-a126-18dbdbe3f6e1_sinagoga_brasov1.jpg",
-    answer: "beth israel synagogue"
+    answer: "beth israel synagogue",
+    needsPhoto: false
   },
 
   {
     title: "Checkpoint 3",
-    question: "What is the name of this place?",
+    question: "Find this place and take a picture with it!",
     image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Johannes_Honterus_School_Brasov_Building_A_part_1.JPG/250px-Johannes_Honterus_School_Brasov_Building_A_part_1.JPG",
-    answer: "corp a"
+    answer: "corp a",
+    needsPhoto: true
   }
 
 ];
 
+
+// GROUPS
+
 const groupOrders = {
 
-  1: [0, 1, 2],
+  1: [0, 1, 2, 3, 4],
 
-  2: [1, 2, 0],
+  2: [2, 3, 4, 0, 1],
 
-  3: [2, 0, 1]
+  3: [4, 0, 1, 2, 3]
 
 };
 
+
 let questions = [];
 let currentQuestion = -1;
+
+
+// LOAD QUESTION
 
 function loadQuestion() {
 
@@ -157,7 +206,44 @@ function loadQuestion() {
     questions[currentQuestion].image;
 
   document.getElementById("answer").value = "";
+
+  document.getElementById("photo").value = "";
+
+  // SHOW / HIDE PHOTO INPUT
+
+  if(questions[currentQuestion].needsPhoto){
+
+    document.getElementById("photo").style.display = "inline-block";
+
+  } else {
+
+    document.getElementById("photo").style.display = "none";
+  }
 }
+
+
+// NEXT QUESTION
+
+function nextQuestion() {
+
+  currentQuestion++;
+
+  if(currentQuestion < questions.length){
+
+    loadQuestion();
+
+    document.getElementById("message").innerText =
+      "Correct!";
+
+  } else {
+
+    document.getElementById("message").innerText =
+      "🎉 You finished the rally!";
+  }
+}
+
+
+// CHECK ANSWER
 
 function checkAnswer() {
 
@@ -167,11 +253,15 @@ function checkAnswer() {
     .toLowerCase()
     .trim();
 
+
+  // GROUP SELECT
+
   if(currentQuestion === -1){
 
     if(groupOrders[userAnswer]){
 
-      questions = groupOrders[userAnswer].map(index => allQuestions[index]);
+      questions =
+        groupOrders[userAnswer].map(index => allQuestions[index]);
 
       currentQuestion = 0;
 
@@ -179,8 +269,8 @@ function checkAnswer() {
 
       document.getElementById("message").innerText =
         "Group selected!";
-    }
-    else {
+
+    } else {
 
       document.getElementById("message").innerText =
         "Invalid group number!";
@@ -189,24 +279,63 @@ function checkAnswer() {
     return;
   }
 
+
+  // CORRECT ANSWER
+
   if(userAnswer === questions[currentQuestion].answer){
 
-    currentQuestion++;
+    // IF PHOTO IS REQUIRED
 
-    if(currentQuestion < questions.length){
+    if(questions[currentQuestion].needsPhoto){
 
-      loadQuestion();
+      const file =
+        document.getElementById("photo").files[0];
 
-      document.getElementById("message").innerText =
-        "Correct!";
+      if(!file){
+
+        document.getElementById("message").innerText =
+          "Please upload a photo first!";
+
+        return;
+      }
+
+      const storageRef = storage.ref(
+        "photos/" +
+        Date.now() +
+        "_" +
+        file.name
+      );
+
+      storageRef.put(file)
+
+      .then(() => {
+
+        document.getElementById("message").innerText =
+          "Photo uploaded successfully!";
+
+        nextQuestion();
+
+      })
+
+      .catch((error) => {
+
+        console.error(error);
+
+        document.getElementById("message").innerText =
+          "Upload failed!";
+      });
 
     } else {
 
-      document.getElementById("message").innerText =
-        "🎉 You finished the rally!";
+      nextQuestion();
     }
 
-  } else {
+  }
+
+
+  // WRONG ANSWER
+
+  else {
 
     const button = document.querySelector("button");
 
@@ -239,9 +368,6 @@ function checkAnswer() {
 }
 
 </script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-  
 </body>
 </html>
