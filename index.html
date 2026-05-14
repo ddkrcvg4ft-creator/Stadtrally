@@ -52,15 +52,14 @@
       cursor: pointer;
     }
 
-   button:hover {
-  background: #00a383;
-}
+    button:hover {
+      background: #00a383;
+    }
 
-button:disabled {
-  background: gray;
-  cursor: not-allowed;
-}
-    
+    button:disabled {
+      background: gray;
+      cursor: not-allowed;
+    }
 
     #message {
       margin-top: 15px;
@@ -73,12 +72,12 @@ button:disabled {
 
 <div class="container">
 
-  <h1 id="title">Checkpoint 1</h1>
+  <h1 id="title">Group Selection</h1>
 
-  <img id="image" src="https://wel.ro/wp-content/uploads/2024/09/poartascheibrasov-2.webp" alt="Question Image">
+  <img id="image" src="" alt="Question Image">
 
   <p id="question">
-    What is the name of this place?
+    What is your group number? (1, 2 or 3)
   </p>
 
   <input type="text" id="answer" placeholder="Write the answer here">
@@ -93,76 +92,57 @@ button:disabled {
 
 <script>
 
-const questions = [
+const allQuestions = [
+
   {
     title: "Checkpoint 1",
     question: "What is the name of this place?",
     image: "https://wel.ro/wp-content/uploads/2024/09/poartascheibrasov-2.webp",
     answer: "poarta schei"
   },
+
   {
-    title: "Question?",
-    question: "How many arches does Poarta Schei have?",
-    image: "https://i.pinimg.com/736x/7d/91/f7/7d91f776f3695bae9ca0c0cd7d7c9832.jpg",
-    answer: "3"
-  },
-  {
-    title: "Chekpopint 2",
+    title: "Checkpoint 2",
     question: "What is the name of this place?",
     image: "https://img.directbooking.ro/getimage.ashx?f=Obiective&w=440&file=ad118ec8-06e0-4d1d-a126-18dbdbe3f6e1_sinagoga_brasov1.jpg",
     answer: "beth israel synagogue"
   },
+
   {
-    title: "Question?",
-    question: 'When was the "Beth Israel" Synagogue built?',
-    image: "https://i.pinimg.com/736x/7d/91/f7/7d91f776f3695bae9ca0c0cd7d7c9832.jpg",
-    answer: "1901"
-  },
-   {
-    title: "Chekpopint 3",
+    title: "Checkpoint 3",
     question: "What is the name of this place?",
     image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Johannes_Honterus_School_Brasov_Building_A_part_1.JPG/250px-Johannes_Honterus_School_Brasov_Building_A_part_1.JPG",
     answer: "corp a"
-  },
-  {
-    title: "Question?",
-    question: "Is it the oldest building belonging to our school? Yes/No",
-    image: "https://i.pinimg.com/736x/7d/91/f7/7d91f776f3695bae9ca0c0cd7d7c9832.jpg",
-    answer: "yes"
-  },
-   {
-    title: "Chekpopint 4",
-    question: "What is the name of this place?",
-    image: "https://photos.wikimapia.org/p/00/04/61/14/82_big.jpg",
-    answer: "libraria humanitas"
-  },
-  {
-    title: "Question?",
-    question: "Find a book with Nelson Mandela and take a picture with it       (Answer is nm)",
-    image: "https://i.pinimg.com/736x/7d/91/f7/7d91f776f3695bae9ca0c0cd7d7c9832.jpg",
-    answer: "nm"
-  },
-   {
-    title: "Chekpopint 5",
-    question: "What is the name of this place?",
-    image: "https://protopopiatul-brasov.ro/wp-content/uploads/2020/03/Biserica-Adormirea-Maicii-Domnului-Bra%C5%9Fov-Cetate-3.jpg",
-    answer: "biserica adormirea maicii domnului"
-  },
-  {
-    title: "Question?",
-    question: "Of what religion is this church?",
-    image: "https://i.pinimg.com/736x/7d/91/f7/7d91f776f3695bae9ca0c0cd7d7c9832.jpg",
-    answer: "orthodox"
-  },
-  {
-    title: "Chekpopint 6",
-    question: "What is the name of this place?",
-    image: "https://protopopiatul-brasov.ro/wp-content/uploads/2020/03/Biserica-Adormirea-Maicii-Domnului-Bra%C5%9Fov-Cetate-3.jpg",
-    answer: "biserica adormirea maicii domnului"
   }
+
 ];
 
-let currentQuestion = 0;
+const groupOrders = {
+
+  1: [0, 1, 2],
+
+  2: [1, 2, 0],
+
+  3: [2, 0, 1]
+
+};
+
+let questions = [];
+let currentQuestion = -1;
+
+function loadQuestion() {
+
+  document.getElementById("title").innerText =
+    questions[currentQuestion].title;
+
+  document.getElementById("question").innerText =
+    questions[currentQuestion].question;
+
+  document.getElementById("image").src =
+    questions[currentQuestion].image;
+
+  document.getElementById("answer").value = "";
+}
 
 function checkAnswer() {
 
@@ -172,57 +152,75 @@ function checkAnswer() {
     .toLowerCase()
     .trim();
 
+  if(currentQuestion === -1){
+
+    if(groupOrders[userAnswer]){
+
+      questions = groupOrders[userAnswer].map(index => allQuestions[index]);
+
+      currentQuestion = 0;
+
+      loadQuestion();
+
+      document.getElementById("message").innerText =
+        "Group selected!";
+    }
+    else {
+
+      document.getElementById("message").innerText =
+        "Invalid group number!";
+    }
+
+    return;
+  }
+
   if(userAnswer === questions[currentQuestion].answer){
 
     currentQuestion++;
 
     if(currentQuestion < questions.length){
 
-      document.getElementById("title").innerText =
-        questions[currentQuestion].title;
-
-      document.getElementById("question").innerText =
-        questions[currentQuestion].question;
-
-      document.getElementById("image").src =
-        questions[currentQuestion].image;
-
-      document.getElementById("answer").value = "";
+      loadQuestion();
 
       document.getElementById("message").innerText =
         "Correct!";
+
+    } else {
+
+      document.getElementById("message").innerText =
+        "🎉 You finished the rally!";
     }
 
- } else {
+  } else {
 
-  const button = document.querySelector("button");
+    const button = document.querySelector("button");
 
-  button.disabled = true;
+    button.disabled = true;
 
-  let timeLeft = 120;
-
-  document.getElementById("message").innerText =
-    `Wrong answer! Wait ${timeLeft} seconds.`;
-
-  const timer = setInterval(() => {
-
-    timeLeft--;
+    let timeLeft = 120;
 
     document.getElementById("message").innerText =
       `Wrong answer! Wait ${timeLeft} seconds.`;
 
-    if(timeLeft <= 0){
+    const timer = setInterval(() => {
 
-      clearInterval(timer);
-
-      button.disabled = false;
+      timeLeft--;
 
       document.getElementById("message").innerText =
-        "You can try again!";
-    }
+        `Wrong answer! Wait ${timeLeft} seconds.`;
 
-  }, 1000);
-}
+      if(timeLeft <= 0){
+
+        clearInterval(timer);
+
+        button.disabled = false;
+
+        document.getElementById("message").innerText =
+          "You can try again!";
+      }
+
+    }, 1000);
+  }
 }
 
 </script>
