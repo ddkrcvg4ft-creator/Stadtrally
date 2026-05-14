@@ -90,7 +90,7 @@ What is your group number? (1, 2 or 3)
 
 <br><br>
 
-<input type="file" id="photo" accept="image/*">
+<input type="file" id="photo" accept="image/*" style="display:none;">
 
 <br>
 
@@ -165,28 +165,40 @@ let questions = [];
 let currentQuestion = -1;
 
 function loadQuestion() {
-document.getElementById("title").innerText = questions[currentQuestion].title;
-document.getElementById("question").innerText = questions[currentQuestion].question;
-document.getElementById("image").src = questions[currentQuestion].image;
+
+document.getElementById("title").innerText =
+questions[currentQuestion].title;
+
+document.getElementById("question").innerText =
+questions[currentQuestion].question;
+
+document.getElementById("image").src =
+questions[currentQuestion].image;
 
 document.getElementById("answer").value = "";
-document.getElementById("photo").value = "";
 
-if(questions[currentQuestion].needsPhoto){
-document.getElementById("photo").style.display = "inline-block";
+// FIX RESET FILE INPUT
+const photoInput = document.getElementById("photo");
+photoInput.value = null;
+photoInput.type = "";
+photoInput.type = "file";
+
+// SHOW/HIDE PHOTO INPUT
+if (questions[currentQuestion].needsPhoto) {
+  photoInput.style.display = "inline-block";
 } else {
-document.getElementById("photo").style.display = "none";
+  photoInput.style.display = "none";
 }
 }
 
 function nextQuestion() {
 currentQuestion++;
 
-if(currentQuestion < questions.length){
-loadQuestion();
-document.getElementById("message").innerText = "Correct!";
+if (currentQuestion < questions.length) {
+  loadQuestion();
+  document.getElementById("message").innerText = "Correct!";
 } else {
-document.getElementById("message").innerText = "🎉 You finished the rally!";
+  document.getElementById("message").innerText = "🎉 You finished the rally!";
 }
 }
 
@@ -197,17 +209,17 @@ button.disabled = true;
 const timer = setInterval(() => {
 const timeLeft = Math.ceil((endTime - Date.now()) / 1000);
 
-if(timeLeft > 0){
-document.getElementById("message").innerText =
-`Wrong answer! Wait ${timeLeft} seconds.`;
+if (timeLeft > 0) {
+  document.getElementById("message").innerText =
+    `Wrong answer! Wait ${timeLeft} seconds.`;
 } else {
-clearInterval(timer);
+  clearInterval(timer);
 
-button.disabled = false;
-localStorage.removeItem("penaltyEnd");
+  button.disabled = false;
+  localStorage.removeItem("penaltyEnd");
 
-document.getElementById("message").innerText =
-"You can try again!";
+  document.getElementById("message").innerText =
+    "You can try again!";
 }
 }, 1000);
 }
@@ -218,9 +230,9 @@ const userAnswer =
 document.getElementById("answer").value.toLowerCase().trim();
 
 // GROUP SELECTION
-if(currentQuestion === -1){
+if (currentQuestion === -1) {
 
-if(groupOrders[userAnswer]){
+if (groupOrders[userAnswer]) {
 
 questions = groupOrders[userAnswer].map(i => allQuestions[i]);
 currentQuestion = 0;
@@ -235,20 +247,22 @@ document.getElementById("message").innerText = "Invalid group number!";
 return;
 }
 
-// CHECK ANSWER
-if(userAnswer === questions[currentQuestion].answer){
+// ANSWER CHECK
+if (userAnswer === questions[currentQuestion].answer) {
 
-if(questions[currentQuestion].needsPhoto){
+if (questions[currentQuestion].needsPhoto) {
 
 const file = document.getElementById("photo").files[0];
 
-if(!file){
+if (!file) {
 document.getElementById("message").innerText =
 "Please upload a photo first!";
 return;
 }
 
-const storageRef = storage.ref("photos/" + Date.now() + "_" + file.name);
+const storageRef = storage.ref(
+"photos/" + Date.now() + "_" + file.name
+);
 
 storageRef.put(file)
 .then(() => {
@@ -277,7 +291,7 @@ startPenaltyTimer(endTime);
 window.onload = function () {
 const savedEnd = localStorage.getItem("penaltyEnd");
 
-if(savedEnd && Date.now() < savedEnd){
+if (savedEnd && Date.now() < savedEnd) {
 startPenaltyTimer(Number(savedEnd));
 } else {
 localStorage.removeItem("penaltyEnd");
