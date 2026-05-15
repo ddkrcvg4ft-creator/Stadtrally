@@ -6,6 +6,7 @@
 <title>Stadtrally</title>
 
 <style>
+
 body {
   font-family: Arial, sans-serif;
   background: #111;
@@ -32,7 +33,8 @@ img {
   margin-bottom: 20px;
 }
 
-input {
+input,
+select {
   width: 80%;
   padding: 12px;
   border-radius: 8px;
@@ -70,6 +72,7 @@ button:disabled {
   background: white;
   color: black;
 }
+
 </style>
 </head>
 
@@ -86,15 +89,28 @@ src="https://mediacdn.libertatea.ro/unsafe/1200x664/smart/filters:format(webp):c
 What is your group number? (1, 2 or 3)
 </p>
 
-<input type="text" id="answer" placeholder="Write the answer here">
+<input
+type="text"
+id="answer"
+placeholder="Write the answer here">
+
+<select id="multipleChoice" style="display:none;">
+<option value="">Choose an answer</option>
+</select>
 
 <br><br>
 
-<input type="file" id="photo" accept="image/*" style="display:none;">
+<input
+type="file"
+id="photo"
+accept="image/*"
+style="display:none;">
 
 <br>
 
-<button id="submitBtn" onclick="checkAnswer()">Submit</button>
+<button id="submitBtn" onclick="checkAnswer()">
+Submit
+</button>
 
 <p id="message"></p>
 
@@ -105,77 +121,145 @@ What is your group number? (1, 2 or 3)
 
 <script>
 
+/* =========================
+   FIREBASE
+========================= */
+
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_BUCKET",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+
+apiKey: "YOUR_API_KEY",
+authDomain: "YOUR_DOMAIN",
+projectId: "YOUR_PROJECT_ID",
+storageBucket: "YOUR_BUCKET",
+messagingSenderId: "YOUR_SENDER_ID",
+appId: "YOUR_APP_ID"
+
 };
 
 firebase.initializeApp(firebaseConfig);
+
 const storage = firebase.storage();
+
+/* =========================
+   QUESTIONS
+========================= */
 
 const allQuestions = [
 
 /* =========================
-   ANSWER + PHOTO
-========================= */
-{
-title: "Checkpoint 1",
-question: "Find this place and take a picture with it!",
-image: "https://wel.ro/wp-content/uploads/2024/09/poartascheibrasov-2.webp",
-needsPhoto: false,
-photoOnly: true
-},
-
-/* =========================
-   ONLY ANSWER
-========================= */
-{
-title: "Question 1",
-question: "What important role did he have in our school?",
-image: "https://wel.ro/wp-content/uploads/2024/09/poartascheibrasov-2.webp",
-answer: "poarta schei",
-needsPhoto: false,
-photoOnly: false
-},
-
-/* =========================
    ONLY PHOTO
 ========================= */
+
 {
-title: "Checkpoint 2",
-question: "Upload a photo from this location!",
-image: "https://img.directbooking.ro/getimage.ashx?f=Obiective&w=440&file=ad118ec8-06e0-4d1d-a126-18dbdbe3f6e1_sinagoga_brasov1.jpg",
+title: "Checkpoint 1",
+
+question:
+"Find this place and upload a photo!",
+
+image:
+"https://wel.ro/wp-content/uploads/2024/09/poartascheibrasov-2.webp",
+
 needsPhoto: false,
-photoOnly: true
+
+photoOnly: true,
+
+multipleChoice: false
 },
 
 /* =========================
    ONLY ANSWER
 ========================= */
+
+{
+title: "Question 1",
+
+question:
+"What important role did he have in our school?",
+
+image:
+"https://wel.ro/wp-content/uploads/2024/09/poartascheibrasov-2.webp",
+
+answer: "director",
+
+needsPhoto: false,
+
+photoOnly: false,
+
+multipleChoice: false
+},
+
+/* =========================
+   MULTIPLE CHOICE
+========================= */
+
 {
 title: "Question 2",
-question: "What is the name of this place?",
-image: "https://img.directbooking.ro/getimage.ashx?f=Obiective&w=440&file=ad118ec8-06e0-4d1d-a126-18dbdbe3f6e1_sinagoga_brasov1.jpg",
-answer: "beth israel synagogue",
+
+question:
+"What color is this building?",
+
+image:
+"https://img.directbooking.ro/getimage.ashx?f=Obiective&w=440&file=ad118ec8-06e0-4d1d-a126-18dbdbe3f6e1_sinagoga_brasov1.jpg",
+
+answer: "yellow",
+
+multipleChoice: true,
+
+options: [
+"red",
+"green",
+"yellow",
+"blue"
+],
+
 needsPhoto: false,
+
 photoOnly: false
+},
+
+/* =========================
+   ANSWER + PHOTO
+========================= */
+
+{
+title: "Checkpoint 2",
+
+question:
+"Write the name of this place and upload a photo!",
+
+image:
+"https://img.directbooking.ro/getimage.ashx?f=Obiective&w=440&file=ad118ec8-06e0-4d1d-a126-18dbdbe3f6e1_sinagoga_brasov1.jpg",
+
+answer: "beth israel synagogue",
+
+needsPhoto: true,
+
+photoOnly: false,
+
+multipleChoice: false
 }
 
 ];
 
+/* =========================
+   GROUP ORDERS
+========================= */
+
 const groupOrders = {
+
 1: [0,1,2,3],
 2: [2,3,0,1],
 3: [1,0,3,2]
+
 };
 
 let questions = [];
 let currentQuestion = -1;
 let selectedGroup = null;
+
+/* =========================
+   LOAD QUESTION
+========================= */
 
 function loadQuestion() {
 
@@ -190,36 +274,88 @@ questions[currentQuestion].image;
 
 document.getElementById("answer").value = "";
 
-/* RESET FILE INPUT */
-const photoInput = document.getElementById("photo");
+const photoInput =
+document.getElementById("photo");
+
 photoInput.value = null;
+
 photoInput.type = "";
+
 photoInput.type = "file";
 
-/* SHOW / HIDE ANSWER INPUT */
-if (questions[currentQuestion].photoOnly) {
-  document.getElementById("answer").style.display = "none";
+const answerInput =
+document.getElementById("answer");
+
+const select =
+document.getElementById("multipleChoice");
+
+/* =========================
+   MULTIPLE CHOICE
+========================= */
+
+if (questions[currentQuestion].multipleChoice) {
+
+answerInput.style.display = "none";
+
+select.style.display = "inline-block";
+
+select.innerHTML =
+'<option value="">Choose an answer</option>';
+
+questions[currentQuestion].options.forEach(option => {
+
+select.innerHTML +=
+`<option value="${option}">${option}</option>`;
+
+});
+
 } else {
-  document.getElementById("answer").style.display = "inline-block";
+
+select.style.display = "none";
+
+if (questions[currentQuestion].photoOnly) {
+
+answerInput.style.display = "none";
+
+} else {
+
+answerInput.style.display = "inline-block";
+
 }
 
-/* SHOW / HIDE PHOTO INPUT */
+}
+
+/* =========================
+   PHOTO INPUT
+========================= */
+
 if (
 questions[currentQuestion].needsPhoto ||
 questions[currentQuestion].photoOnly
 ) {
-  photoInput.style.display = "inline-block";
+
+photoInput.style.display = "inline-block";
+
 } else {
-  photoInput.style.display = "none";
+
+photoInput.style.display = "none";
+
 }
 
 }
+
+/* =========================
+   NEXT QUESTION
+========================= */
 
 function nextQuestion() {
 
 currentQuestion++;
 
-localStorage.setItem("currentQuestion", currentQuestion);
+localStorage.setItem(
+"currentQuestion",
+currentQuestion
+);
 
 if (currentQuestion < questions.length) {
 
@@ -237,9 +373,14 @@ document.getElementById("message").innerText =
 
 }
 
+/* =========================
+   PENALTY TIMER
+========================= */
+
 function startPenaltyTimer(endTime) {
 
-const button = document.getElementById("submitBtn");
+const button =
+document.getElementById("submitBtn");
 
 button.disabled = true;
 
@@ -270,9 +411,14 @@ document.getElementById("message").innerText =
 
 }
 
+/* =========================
+   UPLOAD PHOTO
+========================= */
+
 function uploadPhotoAndContinue(file) {
 
 const filename =
+
 "group_" +
 selectedGroup +
 "_" +
@@ -305,13 +451,31 @@ document.getElementById("message").innerText =
 
 }
 
+/* =========================
+   CHECK ANSWER
+========================= */
+
 function checkAnswer() {
 
-const userAnswer =
+let userAnswer = "";
+
+if (questions[currentQuestion]?.multipleChoice) {
+
+userAnswer =
+document.getElementById("multipleChoice")
+.value
+.toLowerCase()
+.trim();
+
+} else {
+
+userAnswer =
 document.getElementById("answer")
 .value
 .toLowerCase()
 .trim();
+
+}
 
 /* =========================
    GROUP SELECTION
@@ -324,7 +488,8 @@ if (groupOrders[userAnswer]) {
 selectedGroup = userAnswer;
 
 questions =
-groupOrders[userAnswer].map(i => allQuestions[i]);
+groupOrders[userAnswer]
+.map(i => allQuestions[i]);
 
 currentQuestion = 0;
 
@@ -404,7 +569,7 @@ uploadPhotoAndContinue(file);
 
 } else {
 
-/* ONLY ANSWER */
+/* ONLY ANSWER / GRILĂ */
 
 nextQuestion();
 
@@ -428,6 +593,10 @@ startPenaltyTimer(endTime);
 
 }
 
+/* =========================
+   PAGE LOAD
+========================= */
+
 window.onload = function () {
 
 const savedGroup =
@@ -441,9 +610,11 @@ if (savedGroup && groupOrders[savedGroup]) {
 selectedGroup = savedGroup;
 
 questions =
-groupOrders[savedGroup].map(i => allQuestions[i]);
+groupOrders[savedGroup]
+.map(i => allQuestions[i]);
 
-currentQuestion = Number(savedQuestion);
+currentQuestion =
+Number(savedQuestion);
 
 if (currentQuestion < questions.length) {
 
