@@ -109,7 +109,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBCzzTb8lHh02inio5vI5ysmXAP16sVgpA",
   authDomain: "stadtrally-6dbca.firebaseapp.com",
   projectId: "stadtrally-6dbca",
-  storageBucket: "stadtrally-6dbca.appspot.com",
+  storageBucket: "stadtrally-6dbca.firebasestorage.app",
   messagingSenderId: "891948287876",
   appId: "1:891948287876:web:bd5eda4ad903a460f2b299"
 };
@@ -163,6 +163,7 @@ const groupOrders = {
 
 let questions = [];
 let currentQuestion = -1;
+let selectedGroup = null;
 
 function loadQuestion() {
 
@@ -193,6 +194,7 @@ if (questions[currentQuestion].needsPhoto) {
 
 function nextQuestion() {
 currentQuestion++;
+localStorage.setItem("currentQuestion", currentQuestion);
 
 if (currentQuestion < questions.length) {
   loadQuestion();
@@ -234,8 +236,13 @@ if (currentQuestion === -1) {
 
 if (groupOrders[userAnswer]) {
 
+selectedGroup = userAnswer;
+
 questions = groupOrders[userAnswer].map(i => allQuestions[i]);
 currentQuestion = 0;
+
+localStorage.setItem("selectedGroup", selectedGroup);
+localStorage.setItem("currentQuestion", currentQuestion);
 
 loadQuestion();
 document.getElementById("message").innerText = "Group selected!";
@@ -260,9 +267,17 @@ document.getElementById("message").innerText =
 return;
 }
 
-const storageRef = storage.ref(
-"photos/" + Date.now() + "_" + file.name
-);
+const filename =
+  "group_" +
+  selectedGroup +
+  "_" +
+  currentQuestion +
+  "_" +
+  Date.now() +
+  "_" +
+  file.name;
+
+const storageRef = storage.ref("photos/" + filename);
 
 storageRef.put(file)
 .then(() => {
@@ -289,13 +304,30 @@ startPenaltyTimer(endTime);
 }
 
 window.onload = function () {
+
+const savedGroup = localStorage.getItem("selectedGroup");
+const savedQuestion = localStorage.getItem("currentQuestion");
+
+if (savedGroup && groupOrders[savedGroup]) {
+
+selectedGroup = savedGroup;
+
+questions = groupOrders[savedGroup].map(i => allQuestions[i]);
+
+currentQuestion = Number(savedQuestion);
+
+if (currentQuestion < questions.length) {
+  loadQuestion();
+}
+}
+
 const savedEnd = localStorage.getItem("penaltyEnd");
 
 if (savedEnd && Date.now() < savedEnd) {
-startPenaltyTimer(Number(savedEnd));
+  startPenaltyTimer(Number(savedEnd));
 } else {
-localStorage.removeItem("penaltyEnd");
-document.getElementById("submitBtn").disabled = false;
+  localStorage.removeItem("penaltyEnd");
+  document.getElementById("submitBtn").disabled = false;
 }
 };
 
