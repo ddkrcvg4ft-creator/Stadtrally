@@ -167,7 +167,7 @@ multipleChoice: false
 },
 
 /* =========================
-   ONLY ANSWER
+   MULTIPLE CHOICE
 ========================= */
 
 {
@@ -182,7 +182,8 @@ image:
 answer: "director",
 
 multipleChoice: true,
-  options: [
+
+options: [
 "director",
 "teacher",
 "janitor",
@@ -191,8 +192,7 @@ multipleChoice: true,
 
 needsPhoto: false,
 
-photoOnly: false,
-
+photoOnly: false
 },
 
 /* =========================
@@ -296,9 +296,7 @@ document.getElementById("answer");
 const select =
 document.getElementById("multipleChoice");
 
-/* =========================
-   MULTIPLE CHOICE
-========================= */
+/* MULTIPLE CHOICE */
 
 if (questions[currentQuestion].multipleChoice) {
 
@@ -332,9 +330,7 @@ answerInput.style.display = "inline-block";
 
 }
 
-/* =========================
-   PHOTO INPUT
-========================= */
+/* PHOTO INPUT */
 
 if (
 questions[currentQuestion].needsPhoto ||
@@ -466,7 +462,21 @@ function checkAnswer() {
 
 let userAnswer = "";
 
-if (questions[currentQuestion]?.multipleChoice) {
+/* GROUP SELECTION */
+
+if (currentQuestion === -1) {
+
+userAnswer =
+document.getElementById("answer")
+.value
+.toLowerCase()
+.trim();
+
+} else {
+
+/* MULTIPLE CHOICE */
+
+if (questions[currentQuestion].multipleChoice) {
 
 userAnswer =
 document.getElementById("multipleChoice")
@@ -476,6 +486,8 @@ document.getElementById("multipleChoice")
 
 } else {
 
+/* NORMAL ANSWER */
+
 userAnswer =
 document.getElementById("answer")
 .value
@@ -484,9 +496,9 @@ document.getElementById("answer")
 
 }
 
-/* =========================
-   GROUP SELECTION
-========================= */
+}
+
+/* GROUP SELECTION */
 
 if (currentQuestion === -1) {
 
@@ -526,9 +538,7 @@ return;
 
 }
 
-/* =========================
-   PHOTO ONLY
-========================= */
+/* PHOTO ONLY */
 
 if (questions[currentQuestion].photoOnly) {
 
@@ -544,15 +554,16 @@ return;
 
 }
 
+document.getElementById("message").innerText =
+"Uploading photo...";
+
 uploadPhotoAndContinue(file);
 
 return;
 
 }
 
-/* =========================
-   ANSWER CHECK
-========================= */
+/* ANSWER CHECK */
 
 if (userAnswer === questions[currentQuestion].answer) {
 
@@ -571,6 +582,9 @@ document.getElementById("message").innerText =
 return;
 
 }
+
+document.getElementById("message").innerText =
+"Uploading photo...";
 
 uploadPhotoAndContinue(file);
 
