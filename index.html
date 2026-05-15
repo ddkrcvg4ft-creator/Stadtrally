@@ -77,7 +77,7 @@ button:disabled {
 
 <div class="container">
 
-<h1 id="title">Welcome to the BRASOV STADTRALLY!</h1>
+<h1 id="title">Group Selection</h1>
 
 <img id="image"
 src="https://mediacdn.libertatea.ro/unsafe/1200x664/smart/filters:format(webp):contrast(8):quality(75)/https://static4.libertatea.ro/wp-content/uploads/2019/06/brasov-centrul-orasului-brasov.jpg">
@@ -106,59 +106,72 @@ What is your group number? (1, 2 or 3)
 <script>
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBCzzTb8lHh02inio5vI5ysmXAP16sVgpA",
-  authDomain: "stadtrally-6dbca.firebaseapp.com",
-  projectId: "stadtrally-6dbca",
-  storageBucket: "stadtrally-6dbca.firebasestorage.app",
-  messagingSenderId: "891948287876",
-  appId: "1:891948287876:web:bd5eda4ad903a460f2b299"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_BUCKET",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
 firebase.initializeApp(firebaseConfig);
 const storage = firebase.storage();
 
 const allQuestions = [
+
+/* =========================
+   ANSWER + PHOTO
+========================= */
 {
 title: "Checkpoint 1",
 question: "Find this place and take a picture with it!",
 image: "https://wel.ro/wp-content/uploads/2024/09/poartascheibrasov-2.webp",
 answer: "poarta schei",
-needsPhoto: true
+needsPhoto: true,
+photoOnly: false
 },
+
+/* =========================
+   ONLY ANSWER
+========================= */
 {
 title: "Question 1",
 question: "What is the name of this place?",
 image: "https://wel.ro/wp-content/uploads/2024/09/poartascheibrasov-2.webp",
 answer: "poarta schei",
-needsPhoto: false
+needsPhoto: false,
+photoOnly: false
 },
+
+/* =========================
+   ONLY PHOTO
+========================= */
 {
 title: "Checkpoint 2",
-question: "Find this place and take a picture with it!",
+question: "Upload a photo from this location!",
 image: "https://img.directbooking.ro/getimage.ashx?f=Obiective&w=440&file=ad118ec8-06e0-4d1d-a126-18dbdbe3f6e1_sinagoga_brasov1.jpg",
-answer: "beth israel synagogue",
-needsPhoto: true
+needsPhoto: false,
+photoOnly: true
 },
+
+/* =========================
+   ONLY ANSWER
+========================= */
 {
 title: "Question 2",
 question: "What is the name of this place?",
 image: "https://img.directbooking.ro/getimage.ashx?f=Obiective&w=440&file=ad118ec8-06e0-4d1d-a126-18dbdbe3f6e1_sinagoga_brasov1.jpg",
 answer: "beth israel synagogue",
-needsPhoto: false
-},
-{
-title: "Checkpoint 3",
-question: "Find this place and take a picture with it!",
-image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Johannes_Honterus_School_Brasov_Building_A_part_1.JPG/250px-Johannes_Honterus_School_Brasov_Building_A_part_1.JPG",
-answer: "corp a",
-needsPhoto: true
+needsPhoto: false,
+photoOnly: false
 }
+
 ];
 
 const groupOrders = {
-1: [0,1,2,3,4],
-2: [2,3,4,0,1],
-3: [4,0,1,2,3]
+1: [0,1,2,3],
+2: [2,3,0,1],
+3: [1,0,3,2]
 };
 
 let questions = [];
@@ -178,91 +191,87 @@ questions[currentQuestion].image;
 
 document.getElementById("answer").value = "";
 
-// FIX RESET FILE INPUT
+/* RESET FILE INPUT */
 const photoInput = document.getElementById("photo");
 photoInput.value = null;
 photoInput.type = "";
 photoInput.type = "file";
 
-// SHOW/HIDE PHOTO INPUT
-if (questions[currentQuestion].needsPhoto) {
+/* SHOW / HIDE ANSWER INPUT */
+if (questions[currentQuestion].photoOnly) {
+  document.getElementById("answer").style.display = "none";
+} else {
+  document.getElementById("answer").style.display = "inline-block";
+}
+
+/* SHOW / HIDE PHOTO INPUT */
+if (
+questions[currentQuestion].needsPhoto ||
+questions[currentQuestion].photoOnly
+) {
   photoInput.style.display = "inline-block";
 } else {
   photoInput.style.display = "none";
 }
+
 }
 
 function nextQuestion() {
+
 currentQuestion++;
+
 localStorage.setItem("currentQuestion", currentQuestion);
 
 if (currentQuestion < questions.length) {
-  loadQuestion();
-  document.getElementById("message").innerText = "Correct!";
+
+loadQuestion();
+
+document.getElementById("message").innerText =
+"Correct!";
+
 } else {
-  document.getElementById("message").innerText = "🎉 You finished the rally!";
+
+document.getElementById("message").innerText =
+"🎉 You finished the rally!";
+
 }
+
 }
 
 function startPenaltyTimer(endTime) {
+
 const button = document.getElementById("submitBtn");
+
 button.disabled = true;
 
 const timer = setInterval(() => {
-const timeLeft = Math.ceil((endTime - Date.now()) / 1000);
+
+const timeLeft =
+Math.ceil((endTime - Date.now()) / 1000);
 
 if (timeLeft > 0) {
-  document.getElementById("message").innerText =
-    `Wrong answer! Wait ${timeLeft} seconds.`;
-} else {
-  clearInterval(timer);
 
-  button.disabled = false;
-  localStorage.removeItem("penaltyEnd");
-
-  document.getElementById("message").innerText =
-    "You can try again!";
-}
-}, 1000);
-}
-
-function checkAnswer() {
-
-const userAnswer =
-document.getElementById("answer").value.toLowerCase().trim();
-
-// GROUP SELECTION
-if (currentQuestion === -1) {
-
-if (groupOrders[userAnswer]) {
-
-selectedGroup = userAnswer;
-
-questions = groupOrders[userAnswer].map(i => allQuestions[i]);
-currentQuestion = 0;
-
-localStorage.setItem("selectedGroup", selectedGroup);
-localStorage.setItem("currentQuestion", currentQuestion);
-
-loadQuestion();
-document.getElementById("message").innerText = "Group selected!";
-
-} else {
-document.getElementById("message").innerText = "Invalid group number!";
-}
-
-return;
-}
-
- if (questions[currentQuestion].photoOnly) {
-
-const file = document.getElementById("photo").files[0];
-
-if (!file) {
 document.getElementById("message").innerText =
-"Please upload a photo first!";
-return;
+`Wrong answer! Wait ${timeLeft} seconds.`;
+
+} else {
+
+clearInterval(timer);
+
+button.disabled = false;
+
+localStorage.removeItem("penaltyEnd");
+
+document.getElementById("message").innerText =
+"You can try again!";
+
 }
+
+}, 1000);
+
+}
+
+function uploadPhotoAndContinue(file) {
 
 const filename =
 "group_" +
@@ -274,96 +283,193 @@ Date.now() +
 "_" +
 file.name;
 
-const storageRef = storage.ref("photos/" + filename);
+const storageRef =
+storage.ref("photos/" + filename);
 
 storageRef.put(file)
+
 .then(() => {
+
 document.getElementById("message").innerText =
 "Photo uploaded successfully!";
+
 nextQuestion();
+
 })
+
 .catch(() => {
+
 document.getElementById("message").innerText =
 "Upload failed!";
+
 });
 
+}
+
+function checkAnswer() {
+
+const userAnswer =
+document.getElementById("answer")
+.value
+.toLowerCase()
+.trim();
+
+/* =========================
+   GROUP SELECTION
+========================= */
+
+if (currentQuestion === -1) {
+
+if (groupOrders[userAnswer]) {
+
+selectedGroup = userAnswer;
+
+questions =
+groupOrders[userAnswer].map(i => allQuestions[i]);
+
+currentQuestion = 0;
+
+localStorage.setItem(
+"selectedGroup",
+selectedGroup
+);
+
+localStorage.setItem(
+"currentQuestion",
+currentQuestion
+);
+
+loadQuestion();
+
+document.getElementById("message").innerText =
+"Group selected!";
+
+} else {
+
+document.getElementById("message").innerText =
+"Invalid group number!";
+
+}
+
 return;
-} 
-// ANSWER CHECK
+
+}
+
+/* =========================
+   PHOTO ONLY
+========================= */
+
+if (questions[currentQuestion].photoOnly) {
+
+const file =
+document.getElementById("photo").files[0];
+
+if (!file) {
+
+document.getElementById("message").innerText =
+"Please upload a photo first!";
+
+return;
+
+}
+
+uploadPhotoAndContinue(file);
+
+return;
+
+}
+
+/* =========================
+   ANSWER CHECK
+========================= */
+
 if (userAnswer === questions[currentQuestion].answer) {
+
+/* ANSWER + PHOTO */
 
 if (questions[currentQuestion].needsPhoto) {
 
-const file = document.getElementById("photo").files[0];
+const file =
+document.getElementById("photo").files[0];
 
 if (!file) {
+
 document.getElementById("message").innerText =
 "Please upload a photo first!";
+
 return;
+
 }
 
-const filename =
-  "group_" +
-  selectedGroup +
-  "_" +
-  currentQuestion +
-  "_" +
-  Date.now() +
-  "_" +
-  file.name;
-
-const storageRef = storage.ref("photos/" + filename);
-
-storageRef.put(file)
-.then(() => {
-document.getElementById("message").innerText =
-"Photo uploaded successfully!";
-nextQuestion();
-})
-.catch(() => {
-document.getElementById("message").innerText =
-"Upload failed!";
-});
+uploadPhotoAndContinue(file);
 
 } else {
+
+/* ONLY ANSWER */
+
 nextQuestion();
+
 }
 
 } else {
 
-// PENALTY
-const endTime = Date.now() + 120000;
-localStorage.setItem("penaltyEnd", endTime);
+/* PENALTY */
+
+const endTime =
+Date.now() + 120000;
+
+localStorage.setItem(
+"penaltyEnd",
+endTime
+);
+
 startPenaltyTimer(endTime);
+
 }
+
 }
 
 window.onload = function () {
 
-const savedGroup = localStorage.getItem("selectedGroup");
-const savedQuestion = localStorage.getItem("currentQuestion");
+const savedGroup =
+localStorage.getItem("selectedGroup");
+
+const savedQuestion =
+localStorage.getItem("currentQuestion");
 
 if (savedGroup && groupOrders[savedGroup]) {
 
 selectedGroup = savedGroup;
 
-questions = groupOrders[savedGroup].map(i => allQuestions[i]);
+questions =
+groupOrders[savedGroup].map(i => allQuestions[i]);
 
 currentQuestion = Number(savedQuestion);
 
 if (currentQuestion < questions.length) {
-  loadQuestion();
-}
+
+loadQuestion();
+
 }
 
-const savedEnd = localStorage.getItem("penaltyEnd");
+}
+
+const savedEnd =
+localStorage.getItem("penaltyEnd");
 
 if (savedEnd && Date.now() < savedEnd) {
-  startPenaltyTimer(Number(savedEnd));
+
+startPenaltyTimer(Number(savedEnd));
+
 } else {
-  localStorage.removeItem("penaltyEnd");
-  document.getElementById("submitBtn").disabled = false;
+
+localStorage.removeItem("penaltyEnd");
+
+document.getElementById("submitBtn").disabled =
+false;
+
 }
+
 };
 
 </script>
