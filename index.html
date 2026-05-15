@@ -254,6 +254,41 @@ document.getElementById("message").innerText = "Invalid group number!";
 return;
 }
 
+ if (questions[currentQuestion].photoOnly) {
+
+const file = document.getElementById("photo").files[0];
+
+if (!file) {
+document.getElementById("message").innerText =
+"Please upload a photo first!";
+return;
+}
+
+const filename =
+"group_" +
+selectedGroup +
+"_" +
+currentQuestion +
+"_" +
+Date.now() +
+"_" +
+file.name;
+
+const storageRef = storage.ref("photos/" + filename);
+
+storageRef.put(file)
+.then(() => {
+document.getElementById("message").innerText =
+"Photo uploaded successfully!";
+nextQuestion();
+})
+.catch(() => {
+document.getElementById("message").innerText =
+"Upload failed!";
+});
+
+return;
+} 
 // ANSWER CHECK
 if (userAnswer === questions[currentQuestion].answer) {
 
