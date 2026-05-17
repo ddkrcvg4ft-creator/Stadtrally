@@ -178,6 +178,38 @@ questions[currentQuestion].image;
 
 document.getElementById("answer").value = "";
 
+const answerInput =
+document.getElementById("answer");
+
+const select =
+document.getElementById("multipleChoice");
+
+/* MULTIPLE CHOICE */
+
+if (questions[currentQuestion].multipleChoice) {
+
+answerInput.style.display = "none";
+
+select.style.display = "inline-block";
+
+select.innerHTML =
+'<option value="">Choose an answer</option>';
+
+questions[currentQuestion].options.forEach(option => {
+
+select.innerHTML +=
+`<option value="${option}">${option}</option>`;
+
+});
+
+} else {
+
+select.style.display = "none";
+
+answerInput.style.display = "inline-block";
+
+}
+
 // FIX RESET FILE INPUT
 const photoInput = document.getElementById("photo");
 photoInput.value = null;
@@ -228,9 +260,25 @@ if (timeLeft > 0) {
 
 function checkAnswer() {
 
-const userAnswer =
-document.getElementById("answer").value.toLowerCase().trim();
+let userAnswer = "";
 
+if (questions[currentQuestion].multipleChoice) {
+
+userAnswer =
+document.getElementById("multipleChoice")
+.value
+.toLowerCase()
+.trim();
+
+} else {
+
+userAnswer =
+document.getElementById("answer")
+.value
+.toLowerCase()
+.trim();
+
+}
 // GROUP SELECTION
 if (currentQuestion === -1) {
 
