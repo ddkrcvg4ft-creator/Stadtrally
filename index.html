@@ -122,17 +122,25 @@ firebase.initializeApp(firebaseConfig);
 const storage = firebase.storage();
 
 const allQuestions = [
+
+/* PHOTO ONLY */
+
 {
 title: "Checkpoint 1",
 question: "Find this place and take a picture with it!",
 image: "https://wel.ro/wp-content/uploads/2024/09/poartascheibrasov-2.webp",
-answer: "poarta schei",
-needsPhoto: true
+
+needsPhoto: true,
+photoOnly: true
 },
+
+/* MULTIPLE CHOICE */
+
 {
 title: "Question 1",
 question: "What is the name of this place?",
 image: "https://wel.ro/wp-content/uploads/2024/09/poartascheibrasov-2.webp",
+
 answer: "poarta schei",
 
 multipleChoice: true,
@@ -146,27 +154,42 @@ options: [
 
 needsPhoto: false
 },
+
+/* NORMAL ANSWER + PHOTO */
+
 {
 title: "Checkpoint 2",
-question: "Find this place and take a picture with it!",
+question: "Write the name and take a picture with it!",
 image: "https://img.directbooking.ro/getimage.ashx?f=Obiective&w=440&file=ad118ec8-06e0-4d1d-a126-18dbdbe3f6e1_sinagoga_brasov1.jpg",
+
 answer: "beth israel synagogue",
+
 needsPhoto: true
 },
+
+/* NORMAL ANSWER */
+
 {
 title: "Question 2",
 question: "What is the name of this place?",
 image: "https://img.directbooking.ro/getimage.ashx?f=Obiective&w=440&file=ad118ec8-06e0-4d1d-a126-18dbdbe3f6e1_sinagoga_brasov1.jpg",
+
 answer: "beth israel synagogue",
+
 needsPhoto: false
 },
+
+/* PHOTO ONLY */
+
 {
 title: "Checkpoint 3",
 question: "Find this place and take a picture with it!",
 image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Johannes_Honterus_School_Brasov_Building_A_part_1.JPG/250px-Johannes_Honterus_School_Brasov_Building_A_part_1.JPG",
-answer: "corp a",
-needsPhoto: true
+
+needsPhoto: true,
+photoOnly: true
 }
+
 ];
 
 const groupOrders = {
@@ -220,7 +243,15 @@ select.innerHTML +=
 
 select.style.display = "none";
 
+if (questions[currentQuestion].photoOnly) {
+
+answerInput.style.display = "none";
+
+} else {
+
 answerInput.style.display = "inline-block";
+
+}
 
 }
 
@@ -316,6 +347,61 @@ document.getElementById("message").innerText =
 "Invalid group number!";
 
 }
+
+return;
+}
+
+/* =========================
+   PHOTO ONLY
+========================= */
+
+if (questions[currentQuestion].photoOnly) {
+
+const file =
+document.getElementById("photo").files[0];
+
+if (!file) {
+
+document.getElementById("message").innerText =
+"Please upload a photo first!";
+
+return;
+
+}
+
+const filename =
+
+"group_" +
+selectedGroup +
+"_" +
+currentQuestion +
+"_" +
+Date.now() +
+"_" +
+file.name;
+
+const storageRef =
+storage.ref("photos/" + filename);
+
+storageRef.put(file)
+
+.then(() => {
+
+document.getElementById("message").innerText =
+"Photo uploaded successfully!";
+
+nextQuestion();
+
+})
+
+.catch((error) => {
+
+console.error(error);
+
+document.getElementById("message").innerText =
+"Upload failed!";
+
+});
 
 return;
 }
