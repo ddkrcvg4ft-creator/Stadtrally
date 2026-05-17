@@ -692,6 +692,17 @@ let userAnswer = "";
 
 if (questions[currentQuestion].multipleChoice) {
 
+if (
+document.getElementById("multipleChoice").value === ""
+) {
+
+document.getElementById("message").innerText =
+"Please choose an answer!";
+
+return;
+
+}
+
 userAnswer =
 document.getElementById("multipleChoice")
 .value
