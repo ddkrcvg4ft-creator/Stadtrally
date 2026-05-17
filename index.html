@@ -432,6 +432,23 @@ questions[currentQuestion].image;
 
 document.getElementById("answer").value = "";
 
+const keywordBox =
+document.getElementById("keywordBox");
+
+if (questions[currentQuestion].keyword) {
+
+keywordBox.style.display = "block";
+
+keywordBox.innerText =
+"Keyword: " +
+questions[currentQuestion].keyword;
+
+} else {
+
+keywordBox.style.display = "none";
+
+}
+
 const answerInput =
 document.getElementById("answer");
 
