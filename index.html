@@ -434,7 +434,10 @@ document.getElementById("answer")
    ANSWER CHECK
 ========================= */
 
-if (userAnswer === questions[currentQuestion].answer) {
+if (
+userAnswer ===
+questions[currentQuestion].answer.toLowerCase()
+) {
 
 if (questions[currentQuestion].needsPhoto) {
 
