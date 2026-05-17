@@ -476,7 +476,43 @@ if (currentQuestion < questions.length) {
   loadQuestion();
   document.getElementById("message").innerText = "Correct!";
 } else {
-  document.getElementById("message").innerText = "🎉 You finished the rally!";
+  document.querySelector(".container").innerHTML = `
+
+<h1 style="font-size:40px; color:#00b894;">
+🎉 Congratulations!
+</h1>
+
+<img
+src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Panorama_Brasov.jpg/1280px-Panorama_Brasov.jpg"
+style="
+width:100%;
+border-radius:15px;
+margin-top:20px;
+margin-bottom:20px;
+"
+>
+
+<h2>
+You have successfully completed the Brașov Stadtrally!
+</h2>
+
+<p style="
+font-size:18px;
+line-height:1.6;
+margin-top:20px;
+">
+Thank you for exploring the history, culture,
+and landmarks of Brașov with us.
+<br><br>
+We hope you enjoyed the adventure,
+worked well as a team,
+and discovered many interesting stories
+about this amazing city.
+<br><br>
+Great job!
+</p>
+
+`;
 }
 }
 
