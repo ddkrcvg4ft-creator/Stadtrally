@@ -134,6 +134,16 @@ title: "Question 1",
 question: "What is the name of this place?",
 image: "https://wel.ro/wp-content/uploads/2024/09/poartascheibrasov-2.webp",
 answer: "poarta schei",
+
+multipleChoice: true,
+
+options: [
+"poarta schei",
+"black church",
+"white tower",
+"catherine gate"
+],
+
 needsPhoto: false
 },
 {
@@ -264,6 +274,56 @@ if (timeLeft > 0) {
 
 function checkAnswer() {
 
+/* =========================
+   GROUP SELECTION
+========================= */
+
+if (currentQuestion === -1) {
+
+const userAnswer =
+document.getElementById("answer")
+.value
+.toLowerCase()
+.trim();
+
+if (groupOrders[userAnswer]) {
+
+selectedGroup = userAnswer;
+
+questions =
+groupOrders[userAnswer].map(i => allQuestions[i]);
+
+currentQuestion = 0;
+
+localStorage.setItem(
+"selectedGroup",
+selectedGroup
+);
+
+localStorage.setItem(
+"currentQuestion",
+currentQuestion
+);
+
+loadQuestion();
+
+document.getElementById("message").innerText =
+"Group selected!";
+
+} else {
+
+document.getElementById("message").innerText =
+"Invalid group number!";
+
+}
+
+return;
+}
+
+/* =========================
+   GET ANSWER
+========================= */
+
 let userAnswer = "";
 
 if (questions[currentQuestion].multipleChoice) {
@@ -283,76 +343,85 @@ document.getElementById("answer")
 .trim();
 
 }
-// GROUP SELECTION
-if (currentQuestion === -1) {
 
-if (groupOrders[userAnswer]) {
+/* =========================
+   ANSWER CHECK
+========================= */
 
-selectedGroup = userAnswer;
-
-questions = groupOrders[userAnswer].map(i => allQuestions[i]);
-currentQuestion = 0;
-
-localStorage.setItem("selectedGroup", selectedGroup);
-localStorage.setItem("currentQuestion", currentQuestion);
-
-loadQuestion();
-document.getElementById("message").innerText = "Group selected!";
-
-} else {
-document.getElementById("message").innerText = "Invalid group number!";
-}
-
-return;
-}
-
-// ANSWER CHECK
 if (userAnswer === questions[currentQuestion].answer) {
 
 if (questions[currentQuestion].needsPhoto) {
 
-const file = document.getElementById("photo").files[0];
+const file =
+document.getElementById("photo").files[0];
 
 if (!file) {
+
 document.getElementById("message").innerText =
 "Please upload a photo first!";
+
 return;
+
 }
 
 const filename =
-  "group_" +
-  selectedGroup +
-  "_" +
-  currentQuestion +
-  "_" +
-  Date.now() +
-  "_" +
-  file.name;
 
-const storageRef = storage.ref("photos/" + filename);
+"group_" +
+selectedGroup +
+"_" +
+currentQuestion +
+"_" +
+Date.now() +
+"_" +
+file.name;
+
+const storageRef =
+storage.ref("photos/" + filename);
 
 storageRef.put(file)
+
 .then(() => {
+
 document.getElementById("message").innerText =
 "Photo uploaded successfully!";
+
 nextQuestion();
+
 })
-.catch(() => {
+
+.catch((error) => {
+
+console.error(error);
+
 document.getElementById("message").innerText =
 "Upload failed!";
+
 });
 
 } else {
+
 nextQuestion();
+
 }
 
 } else {
 
-// PENALTY
-const endTime = Date.now() + 120000;
-localStorage.setItem("penaltyEnd", endTime);
+/* =========================
+   PENALTY
+========================= */
+
+const endTime =
+Date.now() + 120000;
+
+localStorage.setItem(
+"penaltyEnd",
+endTime
+);
+
 startPenaltyTimer(endTime);
+
 }
+
 }
 
 window.onload = function () {
